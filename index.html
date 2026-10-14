@@ -5,13 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>벽돌깨기</title>
 <style>
+  :root {
+    --pink: #ff8fb8;
+    --pink-dark: #ec6a9c;
+    --text: #7a4d6e;
+    --lemon: #ffd66b;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
+    /* 파스텔 그라데이션 + 물방울 무늬 */
     background:
-      radial-gradient(ellipse at 20% 10%, rgba(120, 40, 200, 0.35), transparent 50%),
-      radial-gradient(ellipse at 85% 90%, rgba(0, 160, 255, 0.25), transparent 50%),
-      #05030f;
-    color: #fff;
+      radial-gradient(circle, rgba(255, 255, 255, 0.55) 3px, transparent 4px) 0 0 / 36px 36px,
+      radial-gradient(circle, rgba(255, 255, 255, 0.35) 3px, transparent 4px) 18px 18px / 36px 36px,
+      linear-gradient(160deg, #ffd6e8 0%, #e9dcff 50%, #cfe9ff 100%);
+    color: var(--text);
     font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
     display: flex;
     flex-direction: column;
@@ -28,10 +35,12 @@
   }
   h1 {
     margin-bottom: clamp(6px, 2vh, 14px);
-    font-size: clamp(18px, 5.5vw, 32px);
-    letter-spacing: 4px;
-    color: #e0fbff;
-    text-shadow: 0 0 6px #2ee6ff, 0 0 16px #2ee6ff, 0 0 32px #b14aff;
+    font-size: clamp(18px, min(6vw, 6vh), 34px);
+    letter-spacing: 2px;
+    color: #ff6fa5;
+    text-shadow:
+      2px 2px 0 #fff, -2px 2px 0 #fff, 2px -2px 0 #fff, -2px -2px 0 #fff,
+      0 5px 0 rgba(236, 106, 156, 0.35);
   }
   /* --s: 게임 화면 배율 (JS가 화면 크기에 맞춰 설정) */
   #wrap { position: relative; --s: 1; }
@@ -39,9 +48,9 @@
     display: block;
     width: 640px;
     height: 480px;
-    border: 2px solid #2ee6ff;
-    border-radius: 10px;
-    box-shadow: 0 0 12px #2ee6ff, 0 0 40px rgba(177, 74, 255, 0.5), inset 0 0 20px rgba(46, 230, 255, 0.3);
+    border: 5px solid #fff;
+    border-radius: 24px;
+    box-shadow: 0 10px 0 rgba(236, 106, 156, 0.25), 0 16px 40px rgba(180, 120, 200, 0.35);
     cursor: none;
     touch-action: none;
   }
@@ -52,87 +61,93 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: calc(var(--s) * 18px);
-    background: rgba(5, 3, 15, 0.55);
-    border-radius: 10px;
+    gap: calc(var(--s) * 16px);
+    background: rgba(255, 240, 248, 0.45);
+    border-radius: 24px;
     touch-action: none;
   }
   #overlay.hidden { display: none; }
-  #message { font-size: calc(var(--s) * 64px); font-weight: bold; }
+  #message { font-size: calc(var(--s) * 60px); font-weight: bold; }
   #message:empty, #sub:empty, #scores:empty { display: none; }
-  #message.over { color: #ffd0e0; text-shadow: 0 0 8px #ff2e88, 0 0 24px #ff2e88, 0 0 48px #ff2e88; }
-  #message.clear { color: #fffbd0; text-shadow: 0 0 8px #f9f871, 0 0 24px #f9f871; }
-  #sub { font-size: calc(var(--s) * 20px); color: #c9d6ff; text-shadow: 0 0 8px #6b7bff; }
-  #scores { display: flex; gap: calc(var(--s) * 16px); }
+  #message.over, #message.clear {
+    text-shadow:
+      3px 3px 0 #fff, -3px 3px 0 #fff, 3px -3px 0 #fff, -3px -3px 0 #fff,
+      0 6px 0 rgba(122, 77, 110, 0.2);
+  }
+  #message.over { color: #ff6fa5; }
+  #message.clear { color: #ffb52e; }
+  #sub { font-size: calc(var(--s) * 20px); font-weight: bold; color: var(--text); }
+  #scores { display: flex; gap: calc(var(--s) * 14px); }
   .scoreBox {
     min-width: calc(var(--s) * 130px);
     padding: calc(var(--s) * 10px) calc(var(--s) * 16px);
-    border: 1px solid rgba(46, 230, 255, 0.5);
-    border-radius: 10px;
-    background: rgba(46, 230, 255, 0.06);
+    border: 3px solid #ffc2da;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 4px 0 #ffc2da;
     text-align: center;
   }
-  .scoreBox.best { border-color: rgba(249, 248, 113, 0.6); background: rgba(249, 248, 113, 0.06); }
-  .scoreBox .label { font-size: calc(var(--s) * 14px); color: #8f9bd6; }
-  .scoreBox .value {
-    font-size: calc(var(--s) * 30px);
-    font-weight: bold;
-    color: #e0fbff;
-    text-shadow: 0 0 10px #2ee6ff;
-  }
-  .scoreBox.best .value { color: #fffbd0; text-shadow: 0 0 10px #f9f871; }
+  .scoreBox.best { border-color: #ffe08a; box-shadow: 0 4px 0 #ffe08a; }
+  .scoreBox .label { font-size: calc(var(--s) * 14px); color: #b48aa8; font-weight: bold; }
+  .scoreBox .value { font-size: calc(var(--s) * 30px); font-weight: bold; color: #ff6fa5; }
+  .scoreBox.best .value { color: #ffb52e; }
   .newRecord {
     display: block;
     margin-top: 4px;
     font-size: calc(var(--s) * 13px);
     font-weight: bold;
-    color: #ff5ca8;
-    text-shadow: 0 0 8px #ff2e88;
-    animation: blink 0.8s ease-in-out infinite alternate;
+    color: #ff6fa5;
+    animation: bounce 0.6s ease-in-out infinite alternate;
   }
-  @keyframes blink { from { opacity: 1; } to { opacity: 0.4; } }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-4px); } }
   #startBtn {
     font-size: calc(var(--s) * 24px);
     font-family: inherit;
     font-weight: bold;
-    padding: calc(var(--s) * 14px) calc(var(--s) * 44px);
-    border: 2px solid #2ee6ff;
-    border-radius: 12px;
-    background: rgba(46, 230, 255, 0.1);
-    color: #e0fbff;
+    padding: calc(var(--s) * 14px) calc(var(--s) * 46px);
+    border: none;
+    border-radius: 999px;
+    background: var(--pink);
+    color: #fff;
     cursor: pointer;
-    text-shadow: 0 0 8px #2ee6ff;
-    box-shadow: 0 0 12px #2ee6ff, inset 0 0 12px rgba(46, 230, 255, 0.4);
-    transition: background 0.15s, transform 0.1s;
+    box-shadow: 0 6px 0 var(--pink-dark), 0 10px 20px rgba(236, 106, 156, 0.35);
+    transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
   }
-  #startBtn:hover { background: rgba(46, 230, 255, 0.25); }
-  #startBtn:active { transform: scale(0.96); }
+  #startBtn:hover { background: #ffa3c6; transform: translateY(-2px); }
+  #startBtn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--pink-dark); }
   #soundBtn {
     position: fixed;
     top: 16px;
     right: 16px;
-    width: 48px;
-    height: 48px;
+    width: 50px;
+    height: 50px;
     font-size: 22px;
-    border: 2px solid #b14aff;
+    border: 3px solid #ffc2da;
     border-radius: 50%;
-    background: rgba(177, 74, 255, 0.12);
+    background: #fff;
     cursor: pointer;
-    box-shadow: 0 0 10px #b14aff;
+    box-shadow: 0 4px 0 #ffc2da;
     z-index: 10;
   }
-  #soundBtn:hover { background: rgba(177, 74, 255, 0.3); }
-  #soundBtn.off { border-color: #555a78; box-shadow: none; opacity: 0.7; }
-  #help { margin-top: clamp(6px, 2vh, 14px); color: #8f9bd6; font-size: clamp(11px, 3vw, 14px); text-align: center; line-height: 1.7; }
-  @media (max-width: 600px), (max-height: 500px) {
-    #soundBtn { top: 8px; right: 8px; width: 38px; height: 38px; font-size: 18px; }
+  #soundBtn:hover { transform: translateY(-2px); }
+  #soundBtn:active { transform: translateY(3px); box-shadow: 0 1px 0 #ffc2da; }
+  #soundBtn.off { opacity: 0.6; filter: grayscale(0.6); }
+  #help {
+    margin-top: clamp(6px, 2vh, 14px);
+    color: var(--text);
+    font-size: clamp(11px, 3vw, 14px);
+    text-align: center;
+    line-height: 1.7;
   }
-  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; }
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; vertical-align: middle; }
+  @media (max-width: 600px), (max-height: 500px) {
+    #soundBtn { top: 8px; right: 8px; width: 40px; height: 40px; font-size: 18px; }
+  }
 </style>
 </head>
 <body>
   <button id="soundBtn" title="소리 켜기/끄기 (M)">🔊</button>
-  <h1>BRICK BREAKER</h1>
+  <h1>🍓 말랑말랑 벽돌깨기 🍭</h1>
   <div id="wrap">
     <canvas id="game" width="640" height="480"></canvas>
     <div id="overlay">
@@ -144,8 +159,8 @@
   </div>
   <p id="help">
     <span id="controls">← → 방향키 또는 마우스로 패들을 움직이세요 · M 키로 소리 켜기/끄기</span><br>
-    <span class="dot" style="background:#39ff14;box-shadow:0 0 6px #39ff14"></span> 초록 아이템: 10초 동안 패들 길어짐 &nbsp;
-    <span class="dot" style="background:#f9f871;box-shadow:0 0 6px #f9f871"></span> 노란 아이템: 공 하나 추가
+    <span class="dot" style="background:#7fdcb9"></span> 민트 사탕: 10초 동안 패들 길어짐 &nbsp;
+    <span class="dot" style="background:#ffd66b"></span> 노란 사탕: 공 하나 추가
   </p>
 
 <script>
@@ -173,14 +188,14 @@
   const BRICK_SIDE = 22;
   const BRICK_H = 20;
   const BRICK_W = (W - BRICK_SIDE * 2 - BRICK_GAP * (COLS - 1)) / COLS;
-  const ROW_COLORS = ["#ff2e88", "#ff9f1c", "#f9f871", "#39ff14", "#2ee6ff"];
+  const ROW_COLORS = ["#ffaecb", "#ffc9a3", "#ffe78f", "#b5ecc9", "#b3dbff"];
 
   // 패들과 공
   const PADDLE_W = 100;
   const PADDLE_W_WIDE = 160;
-  const PADDLE_H = 12;
+  const PADDLE_H = 16;
   const PADDLE_SPEED = 8;
-  const BALL_R = 7;
+  const BALL_R = 8;
   const BASE_SPEED = 5;
   const SPEED_PER_LEVEL = 0.6;
   const MAX_SPEED = 11;
@@ -193,9 +208,14 @@
   const ITEM_FALL = 2.5;
   const WIDE_TIME = 10000; // ms
   const ITEM_TYPES = {
-    wide:  { color: "#39ff14", label: "W" },
-    multi: { color: "#f9f871", label: "+" },
+    wide:  { color: "#7fdcb9", label: "↔" },
+    multi: { color: "#ffd66b", label: "+" },
   };
+
+  // 화면 가운데 문구 색
+  const LEVEL_COLOR = "#9b7bd6";
+  const CLEAR_COLOR = "#ffb52e";
+  const LOSE_COLOR = "#7fa8ff";
 
   const SERVE_DELAY = 1200;   // 공이 패들 위에서 대기하는 시간
   const LEVEL_PAUSE = 1800;   // 레벨 클리어 문구 표시 시간
@@ -237,20 +257,22 @@
     osc.stop(t + dur + 0.02);
   }
 
+  // 부드러운 sine/triangle 위주로 "뿅", "퐁" 같은 귀여운 소리
   const sfx = {
-    wall:   () => tone(320, 0.05, { type: "triangle", vol: 0.15 }),
-    paddle: () => tone(420, 0.09, { type: "square", vol: 0.08, slide: 640 }),
+    wall:   () => tone(700, 0.05, { type: "sine", vol: 0.15 }),
+    paddle: () => tone(480, 0.12, { type: "sine", vol: 0.2, slide: 900 }),
     brick:  (row) => {
-      const f = 1050 - row * 120; // 위쪽 줄일수록 높은 소리
-      tone(f, 0.1, { type: "square", vol: 0.07, slide: f * 0.5 });
-      tone(f * 2, 0.06, { type: "triangle", vol: 0.05 });
+      const f = 900 - row * 90; // 위쪽 줄일수록 높은 소리
+      tone(f, 0.09, { type: "sine", vol: 0.18, slide: f * 1.8 }); // 거품 터지는 "퐁"
+      tone(f * 2, 0.05, { type: "triangle", vol: 0.05, delay: 0.03 });
     },
-    item:   () => [660, 880, 1320].forEach((f, i) => tone(f, 0.1, { type: "triangle", vol: 0.12, delay: i * 0.06 })),
-    lose:   () => tone(440, 0.45, { type: "sawtooth", vol: 0.08, slide: 90 }),
-    clear:  () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, 0.18, { type: "square", vol: 0.07, delay: i * 0.08 })),
+    item:   () => [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.1, { type: "sine", vol: 0.16, delay: i * 0.06 })),
+    lose:   () => tone(700, 0.4, { type: "triangle", vol: 0.16, slide: 260 }),
+    clear:  () => [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, 0.14, { type: "triangle", vol: 0.15, delay: i * 0.09 })),
     gameOver: () => {
-      [494, 392, 330].forEach((f, i) => tone(f, 0.25, { type: "square", vol: 0.08, delay: i * 0.22 }));
-      tone(262, 0.8, { type: "sawtooth", vol: 0.08, slide: 65, delay: 0.66 });
+      // "뿌-뿌-뿌-뿌우~"
+      [392, 370, 349].forEach((f, i) => tone(f, 0.28, { type: "triangle", vol: 0.16, delay: i * 0.3 }));
+      tone(330, 0.9, { type: "triangle", vol: 0.16, slide: 220, delay: 0.9 });
     },
   };
 
@@ -320,59 +342,82 @@
   window.addEventListener("resize", resize);
   window.addEventListener("orientationchange", () => setTimeout(resize, 200));
 
-  // ───────── 우주 배경 ─────────
+  // ───────── 파스텔 하늘 배경 ─────────
   const bgCanvas = document.createElement("canvas");
   bgCanvas.width = W;
   bgCanvas.height = H;
-  (function paintNebula() {
+  (function paintSky() {
     const g = bgCanvas.getContext("2d");
-    g.fillStyle = "#04020c";
+    const grad = g.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, "#ffe4f1");
+    grad.addColorStop(0.55, "#f1e6ff");
+    grad.addColorStop(1, "#dcefff");
+    g.fillStyle = grad;
     g.fillRect(0, 0, W, H);
-    const blobs = [
-      [W * 0.2, H * 0.25, 260, "rgba(140, 40, 220, 0.30)"],
-      [W * 0.85, H * 0.7, 300, "rgba(0, 140, 255, 0.22)"],
-      [W * 0.55, H * 0.95, 220, "rgba(255, 40, 140, 0.15)"],
-    ];
-    for (const [x, y, r, c] of blobs) {
-      const grad = g.createRadialGradient(x, y, 0, x, y, r);
-      grad.addColorStop(0, c);
-      grad.addColorStop(1, "transparent");
-      g.fillStyle = grad;
-      g.fillRect(0, 0, W, H);
+    // 은은한 물방울 무늬
+    g.fillStyle = "rgba(255, 255, 255, 0.45)";
+    for (let y = 12; y < H; y += 32) {
+      for (let x = (y / 32) % 2 ? 28 : 12; x < W; x += 32) {
+        g.beginPath();
+        g.arc(x, y, 2.5, 0, Math.PI * 2);
+        g.fill();
+      }
     }
   })();
 
-  const stars = Array.from({ length: 130 }, () => ({
+  // 천천히 흘러가는 구름
+  const clouds = Array.from({ length: 4 }, (_, i) => ({
     x: Math.random() * W,
-    y: Math.random() * H,
-    r: Math.random() * 1.4 + 0.3,
-    speed: Math.random() * 0.25 + 0.05,
-    phase: Math.random() * Math.PI * 2,
+    y: 150 + i * 70 + Math.random() * 30,
+    scale: 0.6 + Math.random() * 0.6,
+    speed: 0.1 + Math.random() * 0.15,
   }));
 
-  function updateStars(step) {
-    for (const s of stars) {
-      s.y += s.speed * step;
-      s.phase += 0.05 * step;
-      if (s.y > H) { s.y = 0; s.x = Math.random() * W; }
+  // 둥실둥실 떠오르는 하트·별·동그라미
+  const FLOAT_COLORS = ["#ffb3cf", "#ffd6a5", "#fff1a8", "#c3f0d9", "#c2e2ff", "#dccbff"];
+  const floaties = Array.from({ length: 22 }, () => newFloaty(Math.random() * H));
+
+  function newFloaty(y) {
+    return {
+      x: Math.random() * W,
+      y,
+      size: Math.random() * 6 + 5,
+      speed: Math.random() * 0.25 + 0.1,
+      sway: Math.random() * Math.PI * 2,
+      shape: ["heart", "star", "circle"][Math.floor(Math.random() * 3)],
+      color: FLOAT_COLORS[Math.floor(Math.random() * FLOAT_COLORS.length)],
+    };
+  }
+
+  function updateDecor(step) {
+    for (const c of clouds) {
+      c.x += c.speed * step;
+      if (c.x - 80 * c.scale > W) c.x = -80 * c.scale;
+    }
+    for (let i = 0; i < floaties.length; i++) {
+      const f = floaties[i];
+      f.y -= f.speed * step;
+      f.sway += 0.03 * step;
+      if (f.y < -15) floaties[i] = newFloaty(H + 15);
     }
   }
 
-  // ───────── 깨진 벽돌 조각 ─────────
-  function burst(x, y, color, count = 16) {
+  // ───────── 벽돌이 깨질 때 튀는 하트·별 조각 ─────────
+  function burst(x, y, color, count = 14) {
     for (let i = 0; i < count; i++) {
       const a = Math.random() * Math.PI * 2;
-      const v = Math.random() * 3.5 + 1;
+      const v = Math.random() * 3 + 1;
       particles.push({
-        x: x + (Math.random() - 0.5) * BRICK_W * 0.8,
-        y: y + (Math.random() - 0.5) * BRICK_H * 0.6,
+        x: x + (Math.random() - 0.5) * BRICK_W * 0.6,
+        y: y + (Math.random() - 0.5) * BRICK_H * 0.5,
         dx: Math.cos(a) * v,
-        dy: Math.sin(a) * v - 1.5,
-        size: Math.random() * 3 + 2,
+        dy: Math.sin(a) * v - 1.8,
+        size: Math.random() * 5 + 5,
         spin: Math.random() * Math.PI,
         life: 1,
-        decay: Math.random() * 0.02 + 0.018,
-        color,
+        decay: Math.random() * 0.015 + 0.018,
+        shape: ["heart", "star", "circle"][i % 3],
+        color: i % 4 === 0 ? "#ffffff" : color,
       });
     }
   }
@@ -381,14 +426,13 @@
     for (const p of particles) {
       p.x += p.dx * step;
       p.y += p.dy * step;
-      p.dy += 0.12 * step;  // 중력
+      p.dy += 0.1 * step;  // 중력
       p.dx *= Math.pow(0.98, step);
-      p.spin += 0.2 * step;
+      p.spin += 0.12 * step;
       p.life -= p.decay * step;
     }
     particles = particles.filter((p) => p.life > 0 && p.y < H + 10);
   }
-
   // ───────── 게임 진행 ─────────
   function ballSpeed() {
     return Math.min(BASE_SPEED + (level - 1) * SPEED_PER_LEVEL, MAX_SPEED);
@@ -404,6 +448,7 @@
           row: r,
           color: ROW_COLORS[r],
           alive: true,
+          blinkOffset: Math.random() * 3600, // 벽돌마다 다른 때 눈 깜빡임
         });
       }
     }
@@ -439,7 +484,7 @@
     paddle = { x: (W - PADDLE_W) / 2, y: H - 30, w: PADDLE_W };
     buildBricks();
     serveBall();
-    banner = { text: "레벨 1", color: "#2ee6ff", left: SERVE_DELAY };
+    banner = { text: "레벨 1", color: LEVEL_COLOR, left: SERVE_DELAY };
   }
 
   function startGame() {
@@ -451,6 +496,7 @@
 
   function gameOver() {
     running = false;
+    banner = null;
     sfx.gameOver();
     const isNew = score > bestScore;
     if (isNew) {
@@ -469,7 +515,7 @@
 
   function levelClear() {
     sfx.clear();
-    banner = { text: "클리어!", color: "#f9f871", left: LEVEL_PAUSE, next: true };
+    banner = { text: "클리어!", color: CLEAR_COLOR, left: LEVEL_PAUSE, next: true };
     balls = [];
     items = [];
   }
@@ -478,7 +524,7 @@
     level++;
     buildBricks();
     serveBall();
-    banner = { text: `레벨 ${level}`, color: "#2ee6ff", left: SERVE_DELAY };
+    banner = { text: `레벨 ${level}`, color: LEVEL_COLOR, left: SERVE_DELAY };
   }
 
   // 입력 처리
@@ -567,6 +613,15 @@
   }
 
   function updateBall(b, step) {
+    // 지나온 자리를 기억해서 꼬리를 그림
+    b.trail = b.trail || [];
+    b.trailTick = (b.trailTick || 0) + step;
+    if (b.trailTick >= 1) {
+      b.trailTick = 0;
+      b.trail.push({ x: b.x, y: b.y });
+      if (b.trail.length > 6) b.trail.shift();
+    }
+
     b.x += b.dx * step;
     b.y += b.dy * step;
 
@@ -692,12 +747,16 @@
       } else {
         sfx.lose();
         serveBall();
-        banner = { text: "목숨 -1", color: "#ff2e88", left: SERVE_DELAY };
+        banner = { text: "목숨 -1", color: LOSE_COLOR, left: SERVE_DELAY };
       }
     }
   }
 
   // ───────── 그리기 ─────────
+  const FACE = "#6b4a64";
+  const BLUSH = "rgba(255, 120, 160, 0.45)";
+  let clock = 0; // 눈 깜빡임 등 애니메이션용 시간(ms)
+
   function roundRect(x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -708,39 +767,129 @@
     ctx.closePath();
   }
 
-  // shadowBlur는 확대/축소에 영향을 받지 않아서 직접 배율을 곱함
-  function glow(color, blur) {
-    ctx.shadowColor = color;
-    ctx.shadowBlur = blur * pixelScale;
+  // 색을 조금 어둡게 (#rrggbb → 테두리/그림자용)
+  function shade(hex, k) {
+    const n = parseInt(hex.slice(1), 16);
+    const r = Math.round(((n >> 16) & 255) * k);
+    const g = Math.round(((n >> 8) & 255) * k);
+    const b = Math.round((n & 255) * k);
+    return `rgb(${r},${g},${b})`;
   }
 
-  function drawHeart(cx, cy, size, filled) {
+  function heartPath(cx, cy, size) {
     const s = size / 2;
     ctx.beginPath();
     ctx.moveTo(cx, cy + s * 0.9);
     ctx.bezierCurveTo(cx - s * 1.6, cy - s * 0.2, cx - s * 0.6, cy - s * 1.3, cx, cy - s * 0.45);
     ctx.bezierCurveTo(cx + s * 0.6, cy - s * 1.3, cx + s * 1.6, cy - s * 0.2, cx, cy + s * 0.9);
     ctx.closePath();
+  }
+
+  function starPath(cx, cy, size) {
+    const outer = size / 2;
+    const inner = outer * 0.5;
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const r = i % 2 ? inner : outer;
+      const a = -Math.PI / 2 + (i * Math.PI) / 5;
+      ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    }
+    ctx.closePath();
+  }
+
+  function shapePath(shape, x, y, size) {
+    if (shape === "heart") heartPath(x, y, size);
+    else if (shape === "star") starPath(x, y, size);
+    else { ctx.beginPath(); ctx.arc(x, y, size / 2.6, 0, Math.PI * 2); }
+  }
+
+  // 귀여운 얼굴: 눈 두 개 + 웃는 입 + 볼터치
+  function drawFace(cx, cy, scale, blink, mood = "smile") {
+    const eyeGap = 7 * scale;
+    ctx.fillStyle = FACE;
+    ctx.strokeStyle = FACE;
+    ctx.lineWidth = 1.6 * scale;
+    ctx.lineCap = "round";
+    for (const sx of [-1, 1]) {
+      const ex = cx + sx * eyeGap;
+      const ey = cy - 1.5 * scale;
+      if (blink) {
+        ctx.beginPath();
+        ctx.moveTo(ex - 2 * scale, ey);
+        ctx.lineTo(ex + 2 * scale, ey);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(ex, ey, 2 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(ex + 0.7 * scale, ey - 0.7 * scale, 0.7 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = FACE;
+      }
+    }
+    ctx.beginPath();
+    if (mood === "o") ctx.arc(cx, cy + 3 * scale, 1.8 * scale, 0, Math.PI * 2);
+    else ctx.arc(cx, cy + 1.5 * scale, 2.6 * scale, 0.15 * Math.PI, 0.85 * Math.PI);
+    mood === "o" ? ctx.fill() : ctx.stroke();
+    ctx.fillStyle = BLUSH;
+    for (const sx of [-1, 1]) {
+      ctx.beginPath();
+      ctx.ellipse(cx + sx * 12 * scale, cy + 2.5 * scale, 3 * scale, 2 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function drawHeart(cx, cy, size, filled) {
+    heartPath(cx, cy, size);
     if (filled) {
-      glow("#ff2e88", 12);
-      ctx.fillStyle = "#ff5ca8";
+      ctx.fillStyle = "#ff7fae";
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.beginPath();
+      ctx.ellipse(cx - size * 0.2, cy - size * 0.12, size * 0.1, size * 0.07, -0.6, 0, Math.PI * 2);
       ctx.fill();
     } else {
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = "#4a3a66";
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fill();
+      ctx.strokeStyle = "#e7c6dc";
       ctx.lineWidth = 2;
       ctx.stroke();
     }
-    ctx.shadowBlur = 0;
+  }
+
+  // 흰 테두리가 있는 글자
+  function outlinedText(text, x, y, color, size) {
+    ctx.font = `bold ${size}px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif`;
+    ctx.lineJoin = "round";
+    ctx.lineWidth = Math.max(4, size / 6);
+    ctx.strokeStyle = "#fff";
+    ctx.strokeText(text, x, y);
+    ctx.fillStyle = color;
+    ctx.fillText(text, x, y);
+  }
+
+  function drawCloud(x, y, s) {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+    ctx.beginPath();
+    ctx.arc(x, y, 22 * s, 0, Math.PI * 2);
+    ctx.arc(x + 26 * s, y - 12 * s, 26 * s, 0, Math.PI * 2);
+    ctx.arc(x + 56 * s, y, 22 * s, 0, Math.PI * 2);
+    ctx.arc(x + 28 * s, y + 8 * s, 22 * s, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   function drawBackground() {
-    ctx.drawImage(bgCanvas, 0, 0);
-    for (const s of stars) {
-      ctx.globalAlpha = 0.45 + 0.55 * Math.abs(Math.sin(s.phase));
-      ctx.fillStyle = "#fff";
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.drawImage(bgCanvas, 0, 0, W, H);
+    for (const c of clouds) drawCloud(c.x, c.y, c.scale);
+    for (const f of floaties) {
+      ctx.globalAlpha = 0.7;
+      ctx.fillStyle = f.color;
+      shapePath(f.shape, f.x + Math.sin(f.sway) * 8, f.y, f.size);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
@@ -749,97 +898,137 @@
   function draw() {
     drawBackground();
 
-    // 벽돌: 반투명 안쪽 + 밝은 네온 테두리
-    ctx.lineWidth = 2;
+    // 벽돌: 말랑한 젤리 + 얼굴 (가끔 눈을 깜빡임)
     for (const b of bricks) {
       if (!b.alive) continue;
-      glow(b.color, 14);
-      roundRect(b.x, b.y, BRICK_W, BRICK_H, 5);
-      ctx.fillStyle = b.color + "40";
+      // 아래쪽 그림자 (말랑한 입체감)
+      roundRect(b.x, b.y + 3, BRICK_W, BRICK_H, 9);
+      ctx.fillStyle = shade(b.color, 0.85);
       ctx.fill();
-      ctx.strokeStyle = b.color;
+      roundRect(b.x, b.y, BRICK_W, BRICK_H, 9);
+      ctx.fillStyle = b.color;
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 2;
       ctx.stroke();
+      // 윗부분 반짝이
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
+      roundRect(b.x + 6, b.y + 3, BRICK_W * 0.35, 4, 2);
+      ctx.fill();
+      const blink = (clock + b.blinkOffset) % 3600 < 140;
+      drawFace(b.x + BRICK_W / 2, b.y + BRICK_H / 2 + 1, 0.95, blink);
     }
-    ctx.shadowBlur = 0;
 
-    // 벽돌 조각
+    // 하트·별 조각
     for (const p of particles) {
       ctx.save();
       ctx.globalAlpha = Math.max(0, p.life);
       ctx.translate(p.x, p.y);
       ctx.rotate(p.spin);
-      glow(p.color, 8);
+      shapePath(p.shape, 0, 0, p.size);
       ctx.fillStyle = p.color;
-      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      ctx.fill();
       ctx.restore();
     }
 
-    // 아이템
+    // 아이템: 사탕 모양
     for (const it of items) {
       const t = ITEM_TYPES[it.type];
-      glow(t.color, 16);
-      roundRect(it.x - ITEM_SIZE, it.y - ITEM_SIZE / 2, ITEM_SIZE * 2, ITEM_SIZE, 7);
+      const r = ITEM_SIZE * 0.75;
+      const wob = Math.sin(clock / 150 + it.x) * 0.2;
+      ctx.save();
+      ctx.translate(it.x, it.y);
+      ctx.rotate(wob);
+      ctx.fillStyle = shade(t.color, 0.9);
+      for (const sx of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(sx * r * 0.8, 0);
+        ctx.lineTo(sx * (r + 9), -7);
+        ctx.lineTo(sx * (r + 9), 7);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.fillStyle = t.color;
       ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = "#0a0618";
-      ctx.font = "bold 12px sans-serif";
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 13px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(t.label, it.x, it.y + 1);
+      ctx.fillText(t.label, 0, 1);
       ctx.textBaseline = "alphabetic";
+      ctx.restore();
     }
 
-    // 패들 (길어진 상태면 초록 네온 + 남은 시간 막대)
-    const pc = wideLeft > 0 ? "#39ff14" : "#2ee6ff";
-    glow(pc, 20);
-    roundRect(paddle.x, paddle.y, paddle.w, PADDLE_H, 6);
-    const pg = ctx.createLinearGradient(0, paddle.y, 0, paddle.y + PADDLE_H);
-    pg.addColorStop(0, "#ffffff");
-    pg.addColorStop(1, pc);
-    ctx.fillStyle = pg;
+    // 패들: 웃는 얼굴 (길어지면 민트색 + 남은 시간 막대)
+    const pc = wideLeft > 0 ? "#8fe3c8" : "#ff9ec4";
+    roundRect(paddle.x, paddle.y + 3, paddle.w, PADDLE_H, PADDLE_H / 2);
+    ctx.fillStyle = shade(pc, 0.82);
     ctx.fill();
+    roundRect(paddle.x, paddle.y, paddle.w, PADDLE_H, PADDLE_H / 2);
+    ctx.fillStyle = pc;
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    roundRect(paddle.x + 10, paddle.y + 3, paddle.w * 0.3, 3, 1.5);
+    ctx.fill();
+    const paddleBlink = clock % 4200 < 150;
+    drawFace(paddle.x + paddle.w / 2, paddle.y + PADDLE_H / 2 + 1, 0.85, paddleBlink, banner && banner.color === LOSE_COLOR ? "o" : "smile");
     if (wideLeft > 0) {
-      ctx.fillStyle = pc;
-      ctx.fillRect(paddle.x, paddle.y + PADDLE_H + 5, paddle.w * (wideLeft / WIDE_TIME), 3);
-    }
-
-    // 공
-    glow("#c56bff", 18);
-    ctx.fillStyle = "#ffffff";
-    for (const b of balls) {
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, BALL_R, 0, Math.PI * 2);
+      ctx.fillStyle = "#5fcfa9";
+      roundRect(paddle.x, paddle.y + PADDLE_H + 6, Math.max(3, paddle.w * (wideLeft / WIDE_TIME)), 4, 2);
       ctx.fill();
     }
-    ctx.shadowBlur = 0;
+
+    // 공: 꼬리 + 동글동글 반짝이는 공
+    for (const b of balls) {
+      if (b.trail) {
+        b.trail.forEach((t, i) => {
+          ctx.globalAlpha = (i + 1) / (b.trail.length + 1) * 0.35;
+          ctx.fillStyle = "#ff9ec4";
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, BALL_R * (0.4 + 0.6 * (i + 1) / b.trail.length), 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+      }
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, BALL_R, 0, Math.PI * 2);
+      ctx.fillStyle = "#fffaf0";
+      ctx.fill();
+      ctx.strokeStyle = "#ff8fb8";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(b.x - BALL_R * 0.35, b.y - BALL_R * 0.35, BALL_R * 0.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     // 상단 정보: 점수 / 레벨 / 목숨
-    ctx.font = "bold 18px sans-serif";
-    ctx.fillStyle = "#e0fbff";
-    glow("#2ee6ff", 10);
     ctx.textAlign = "left";
-    ctx.fillText("점수 " + score, 14, 30);
-    glow("#b14aff", 10);
+    outlinedText("점수 " + score, 14, 31, "#ff6fa5", 18);
     ctx.textAlign = "center";
-    ctx.fillText("레벨 " + level, W / 2, 30);
-    ctx.shadowBlur = 0;
+    outlinedText("레벨 " + level, W / 2, 31, "#9b7bd6", 18);
     for (let i = 0; i < START_LIVES; i++) {
       drawHeart(W - 26 - i * 28, 24, 22, i < lives);
     }
 
-    // 배너
+    // 배너 (살짝 통통 튀는 글자)
     if (banner) {
-      ctx.font = "bold 56px sans-serif";
       ctx.textAlign = "center";
-      glow(banner.color, 28);
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText(banner.text, W / 2, H / 2 + 60);
-      ctx.shadowBlur = 0;
+      const bob = Math.sin(clock / 120) * 4;
+      outlinedText(banner.text, W / 2, H / 2 + 60 + bob, banner.color, 52);
     }
   }
 
-  // 배경 별과 조각은 게임 오버/시작 화면에서도 계속 움직임
+  // 배경 구름·하트와 조각은 게임 오버/시작 화면에서도 계속 움직임
   let lastTime = performance.now();
   function loop(now) {
     const step = Math.min((now - lastTime) / FRAME, 3);
@@ -850,7 +1039,8 @@
       if (running) update(step / n);
       updateParticles(step / n);
     }
-    updateStars(step);
+    updateDecor(step);
+    clock += step * FRAME;
     draw();
     requestAnimationFrame(loop);
   }
